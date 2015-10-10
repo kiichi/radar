@@ -1,0 +1,81 @@
+#locations
+
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/locations' | jq '.'
+
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/locations/ZIP:11101' | jq '.'
+
+# rad3 is available for LIC? -> yes
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/locations/ZIP:11101/?datasetid=NEXRAD3' | jq '.'
+
+
+#list of location categories - CITY? COUNTRY?
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/locationcategories' | jq '.'
+
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/locations/?locationcategoryid:CITY&sortfield=name' | jq '.'
+
+#datasetid:NEXRAD3 - maybe use later
+#-daily summary GHCND
+#-hourly  NORMAL_HLY
+#-daily NORMAL_DLY
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/datasets' | jq '.'
+
+#data categories? -> maybe REFLECTIVITY?
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/datacategories' | jq '.'
+
+# how about data categories related datasetid? -> REFLECTIVITY & PRCP
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/datacategories/?datasetid=NEXRAD3' | jq '.'
+
+
+
+#find date types (1500+items) - I found Radar as RCM as the datatype
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/datatypes/?limit=1000&offset=1000' | jq '.'
+
+#rader stations?
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/stations/?datatypeid=RCM&limit=1000' | jq '.'
+
+#daily summary stations?
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/stations/?datasetid=GHCND&limit=1000' | jq '.'
+
+# give me NY Radar
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/stations/?datatypeid=RCM&limit=1000' | jq '.' | grep NY
+# Got 5 of them.
+#"name": "BINGHAMTON, NY US",
+#"name": "BUFFALO, NY US",
+#"name": "ALBANY, NY US",
+#"name": "NEW YORK CITY, NY US",
+#"name": "FORT DRUM, NY US", -----> station id is NEXRAD:KOKX
+
+#reverse lookup - who covers zip 11101?
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/stations/?locationid=ZIP:11101' | jq '.'
+
+
+#now, what is datasets related RCM? --> NEXRAD3 is only hit. not 2
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/datasets/?datatypeid=RCM' | jq '.'
+
+# new york station does not work....
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=NORMAL_HLY&stationid=NEXRAD:KOKX&startdate=2015-10-01&enddate=2015-10-02'
+
+#500!
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=NEXRAD&stationid=NEXRAD2:KDIX&startdate=2015-10-01&enddate=2015-10-02'
+
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&stationid=GHCND:USC00305804&startdate=2015-10-01&enddate=2015-10-02'
+
+# by location id returns data from their example. daily summary
+# why it works only 2010????
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=NORMAL_DLY&locationid=ZIP:28801&startdate=2010-05-01&enddate=2010-05-01' | jq '.'
+
+
+#works. summary
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&locationid=ZIP:28801&startdate=2010-10-01&enddate=2010-10-02' | jq '.'
+
+#works. Precip
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=PRECIP_HLY&locationid=ZIP:28801&startdate=2010-10-01&enddate=2010-10-02' | jq '.'
+
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&stationid=GHCND:USW00014895&datatypeid=PRCP&startdate=2015-10-01&enddate=2015-10-02' | jq '.'
+
+curl -H "token:oepRtBJradsVwVtYoejCcpggSZDAqmRJ" 'http://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=REFLECTIVITY&locationid=CITY:US390029&startdate=2015-10-01&enddate=2015-10-02' | jq '.'
+
+
+
+
+#maybe find data available location id near by?

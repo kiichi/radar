@@ -66,11 +66,10 @@ def send_tile(z,x,y):
         #projection="lcc",
         resolution='c',colorbar_flag=False, embelish=False,
         )
-    #fig=plt.figure(1)
-    #fig.canvas.draw()
-    #fig.savefig(tilefilename, dpi=72, transparent=True)
-
-    plt.savefig(tilefilename, dpi=72, transparent=True,pad_inches=0,bbox_inches='tight')
+    fig=plt.figure(1)
+    a=fig.gca()
+    a.set_frame_on(False)
+    fig.savefig(tilefilename, dpi=72, transparent=True,pad_inches=0,bbox_inches='tight')
     return send_file(tilefilename, mimetype='image/png')
 
 # DEUBUG
@@ -144,13 +143,15 @@ def sample_tile():
 
     #display.basemap.drawcounties()
 
-    # fig=plt.figure(1)
+    fig=plt.figure(1)
+    a=fig.gca()
+    a.set_frame_on(False)
     # fig.canvas.draw()
     # fig.savefig(tilefilename, dpi=72, transparent=True)
     #fig = plt.figure(figsize=[3.57,3.57])
     #fig.canvas.draw()
 
-    plt.savefig(tilefilename, dpi=72, transparent=True,pad_inches=0,bbox_inches='tight')
+    fig.savefig(tilefilename, dpi=72, transparent=True,pad_inches=0,bbox_inches='tight')
     return send_file(tilefilename, mimetype='image/png')
 
 if __name__ == '__main__':

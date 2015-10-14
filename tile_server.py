@@ -19,7 +19,8 @@ radar = None
 def index():
     return 'Index Page'
 
-@app.route('/tiles/<z>/<x>/<y>.png')
+#http://localhost:5000/tile/8/75/159.png
+@app.route('/tile/<z>/<x>/<y>.png')
 def send_tile(z,x,y):
     # test
     # zoomlevel = 8
@@ -35,23 +36,32 @@ def send_tile(z,x,y):
     ty = int(y)
 
 
-    bounds = mercator.TileBounds( tx, ty, tz)
-    
+    #bounds = mercator.TileBounds( tx, ty, tz)
+
 
     mkpath("cache/%s/%s" % (tz, tx))
     tilefilename = "cache/%s/%s/%s.png" % (tz, tx, ty)
-    print tilefilename
     if os.path.isfile(tilefilename):
+        print tilefilename
         return send_file(tilefilename, mimetype='image/png')
 
+    #mx, my = mercator.LatLonToMeters( lat, lon )
+    #tx, ty = mercator.MetersToTile( mx, my, tz )
     bounds = mercator.TileLatLonBounds(tx, ty, tz)
-    print bounds[0],bounds[1],bounds[2],bounds[3],
+
+    tile_info = "%s: %s"%(tilefilename,bounds)
+    print tile_info
+    #print tilefilename, bounds[0],bounds[1],bounds[2],bounds[3]
 
     display = pyart.graph.RadarMapDisplay(radar)
     display.plot_ppi_map( 'reflectivity', vmin=-32, vmax=80, cmap='pyart_NWSRef',
         min_lat=bounds[0],min_lon=bounds[1],  max_lat=bounds[2], max_lon=bounds[3],
-        #lat_0=lat,lon_0=lon,
-        resolution='c',title_flag=False,colorbar_flag=False, embelish=False,
+        #lat_0=(bounds[0]+bounds[2])/2.0,lon_0=(bounds[1]+bounds[3])/2.0,
+        title_flag=True,title = tilefilename,
+        #title_flag=False,
+        mask_outside=True,
+        projection="lcc",
+        resolution='c',colorbar_flag=False, embelish=False,
         )
     fig=plt.figure(1)
     fig.canvas.draw()
@@ -59,15 +69,22 @@ def send_tile(z,x,y):
     fig.savefig(tilefilename, dpi=72, transparent=True)
     return send_file(tilefilename, mimetype='image/png')
 
-@app.route('/get_tiles/')
-def get_tiles():
-    zoomlevel = 8
-    minlat = 38.12345
-    minlon = -75.12345
-    maxlat = 42.742995
-    maxlon = -71.993475
+# DEUBUG
+#http://localhost:5000/get_tile_list/8/38.12345/-75.12345/42.742995/-71.993475
+@app.route('/get_tile_list/<zoom>/<minlat>/<minlon>/<maxlat>/<maxlon>')
+def get_tile_list(zoom,minlat,minlon,maxlat,maxlon):
+    # zoomlevel = 8
+    # minlat = 38.12345
+    # minlon = -75.12345
+    # maxlat = 42.742995
+    # maxlon = -71.993475
 
-    tz = zoomlevel
+    tz = int(zoom)
+    minlat = float(minlat)
+    minlon = float(minlon)
+    maxlat = float(maxlat)
+    maxlon = float(maxlon)
+
     mx, my = mercator.LatLonToMeters(minlat,minlon)
     tminx, tminy = mercator.MetersToTile(mx,my,tz)
     mx, my = mercator.LatLonToMeters(maxlat,maxlon)
@@ -76,10 +93,48 @@ def get_tiles():
     arr = []
     for ty in range(tminy, tmaxy+1):
         for tx in range(tminx, tmaxx+1):
-            arr.append( (tx,ty) )
+            arr.append( {"x":tx,"y":ty} )
     print arr
     return jsonify(status='ok',tiles=arr)
 
+# DEUBUG
+#http://localhost:5000/get_tile_info/8/40.8217465/-73.588846
+@app.route('/get_tile_info/<zoom>/<lat>/<lon>')
+def get_tile_info(zoom,lat,lon):
+    tz = int(zoom)
+    lat = float(lat)
+    lon = float(lon)
+    mx, my = mercator.LatLonToMeters( lat, lon )
+    tx, ty = mercator.MetersToTile( mx, my, tz )
+    bounds = mercator.TileLatLonBounds(tx, ty, tz)
+    #cache/8/75/159.png 39.9097362345 -74.53125 40.9798980696 -73.125
+    #40.9798980696 -74.53125 42.0329743324 -73.125 cache/8/75/159.png
+    #(39.90973623453719, -74.53125, 40.979898069620155, -73.12499999999999)
+    #39.9097362345 -74.53125 40.9798980696 -73.125
+
+    print bounds
+    print bounds[0],bounds[1],bounds[2],bounds[3],
+
+    return jsonify(status='ok',tiles={"x":tx,"y":ty,"z":tz})
+
+# DEUBUG
+#http://localhost:5000/sample
+@app.route('/sample')
+def sample_tile():
+    matplotlib.rcParams['figure.figsize'] = [12,12]
+    tilefilename = "cache/sample.png"
+    display = pyart.graph.RadarMapDisplay(radar)
+    display.plot_ppi_map( 'reflectivity', vmin=-32, vmax=80, cmap='pyart_NWSRef',
+        title_flag=True,#title = tilefilename,
+        mask_outside=True,
+        projection="lcc",
+        resolution='c',colorbar_flag=False, embelish=False,
+        )
+    display.basemap.drawcounties()
+    fig=plt.figure(1)
+    fig.canvas.draw()
+    fig.savefig(tilefilename, dpi=72, transparent=True)
+    return send_file(tilefilename, mimetype='image/png')
 
 if __name__ == '__main__':
     radar = pyart.io.read_nexrad_level3('sample_data_rad3/KOKX_SDUS21_N1QOKX_201510031824')

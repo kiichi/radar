@@ -70,7 +70,7 @@ def send_tile(z,x,y):
     #fig.canvas.draw()
     #fig.savefig(tilefilename, dpi=72, transparent=True)
 
-    plt.savefig(tilefilename, dpi=72, transparent=True,pad_inches=0)
+    plt.savefig(tilefilename, dpi=72, transparent=True,pad_inches=0,bbox_inches='tight')
     return send_file(tilefilename, mimetype='image/png')
 
 # DEUBUG
@@ -150,7 +150,7 @@ def sample_tile():
     #fig = plt.figure(figsize=[3.57,3.57])
     #fig.canvas.draw()
 
-    plt.savefig(tilefilename, dpi=72, transparent=True,pad_inches=0,bbox_inches=0)
+    plt.savefig(tilefilename, dpi=72, transparent=True,pad_inches=0,bbox_inches='tight')
     return send_file(tilefilename, mimetype='image/png')
 
 if __name__ == '__main__':

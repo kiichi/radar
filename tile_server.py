@@ -19,17 +19,24 @@ radar = None
 def index():
     return 'Index Page'
 
-@app.route('/tile/')
-def send_tile():
+@app.route('/tiles/<z>/<x>/<y>.png')
+def send_tile(z,x,y):
     # test
-    zoomlevel = 8
-    lat = 40.742995
-    lon = -73.993475
+    # zoomlevel = 8
+    # lat = 40.742995
+    # lon = -73.993475
 
-    tz = zoomlevel
-    mx, my = mercator.LatLonToMeters( lat, lon )
-    tx, ty = mercator.MetersToTile( mx, my, tz )
+    #tz = zoomlevel
+    #mx, my = mercator.LatLonToMeters( lat, lon )
+    #tx, ty = mercator.MetersToTile( mx, my, tz )
+
+    tz = int(z)
+    tx = int(x)
+    ty = int(y)
+
+
     bounds = mercator.TileBounds( tx, ty, tz)
+    
 
     mkpath("cache/%s/%s" % (tz, tx))
     tilefilename = "cache/%s/%s/%s.png" % (tz, tx, ty)
@@ -43,7 +50,7 @@ def send_tile():
     display = pyart.graph.RadarMapDisplay(radar)
     display.plot_ppi_map( 'reflectivity', vmin=-32, vmax=80, cmap='pyart_NWSRef',
         min_lat=bounds[0],min_lon=bounds[1],  max_lat=bounds[2], max_lon=bounds[3],
-        lat_0=lat,lon_0=lon,
+        #lat_0=lat,lon_0=lon,
         resolution='c',title_flag=False,colorbar_flag=False, embelish=False,
         )
     fig=plt.figure(1)

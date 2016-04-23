@@ -154,6 +154,7 @@ def sample_tile():
     return send_file(tilefilename, mimetype='image/png')
 
 if __name__ == '__main__':
-    radar = pyart.io.read_nexrad_level3('sample_data_rad3/KOKX_SDUS21_N1QOKX_201510031824')
+    #radar = pyart.io.read_nexrad_level3('sample_data_rad3/KOKX_SDUS21_N1QOKX_201510031824')
+    radar = pyart.io.read_nexrad_level3('sample_high_def/sn.last')
     print 'Radar data has been loaded: ', radar.latitude['data'][0],radar.longitude['data'][0]
     app.run(debug=True)
